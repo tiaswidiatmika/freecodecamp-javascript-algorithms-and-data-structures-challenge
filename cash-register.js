@@ -23,13 +23,11 @@ function createDenomAvailability(wallet){
 }   
 
 function getKeyByValue(value){
-    let newArr = [];
-    newArr.push(
-        Object.keys(denom).find(
+    let newValue;
+    newValue = Object.keys(denom).find(
             key => denom[key] === value
-        )
-    );
-    return newArr;
+        );
+    return newValue;
 }
 
 const paymentStatus = {
@@ -43,6 +41,37 @@ function createOneDimensionArray(cashInDrawer) {
     return cashInDrawer.map(
         currItem => currItem[1]
     );
+}
+
+function wrapper(arr){
+    // this function reduce a one dimesional array to its respective denomination and its sum
+    let newArr  = [];
+    
+    arr.map(
+        function (currItem) {
+            newArr.push(getKeyByValue(currItem));
+        }
+    );
+
+    // console.log(newArr);
+    
+    // z is the container for new array created
+    let z = [];
+    
+    newArr.reduce(function(prev, curr){
+        
+        if(!z.length) {
+            z.push([prev, denom[prev]]);
+        }
+        
+        if (z[z.length - 1][0] === curr) {
+            z[z.length - 1][1] += denom[curr];
+        }else {
+            z.push([curr, denom[curr]]);
+        }
+    });
+    return z;
+    
 }
 
 function cashRegister(price, customerCash, cashInDrawer){
@@ -60,27 +89,35 @@ function cashRegister(price, customerCash, cashInDrawer){
     if (totalCash === change) {
         return {status: paymentStatus.closed,  change: cashInDrawer}
     }
-    
+    console.log(availableDenom);
     // return status insufficient and empty change
     if (totalCash < change) {
         return insufficient;
     }
     
-    
+    console.log("change: "+change);
     // logic to build change
     for (let i = 0; i < availableDenom.length; i++) {
-        
+        if (change - availableDenom[i] >= 0) {
+            change -= availableDenom[i];
+            collectionOfChange.push(availableDenom[i]);
+            
+        }
         
     }
 
     if(change>0) return insufficient;
-    return dictionary(collectionOfChange);
+    console.log(collectionOfChange);
+    return {
+        status: paymentStatus.open,
+        change: wrapper(collectionOfChange)   
+    }
 }
 
 
 
-let price = 32,
-    customerCash = 100,
+let price = 1,
+    customerCash = 12,
     cashInDrawer = [
         ['sepuluh', 100],
         ['lima', 15],
@@ -90,36 +127,11 @@ let wallet = [['sepuluh', 100]];
 
 
 
-let tes = [10, 10, 10, 1 ,1];
-function wrapper(arr){
-    // this function reduce a one dimesional array to its respective denomination and its sum
-    let newArr = [];
-    for (let i = 0; i < arr.length; i++) {
-        let key = getKeyByValue(arr[i]);
-        newArr.push(key);
-    }
-    // z is the container for new array created
-    let z = [];
-    newArr.reduce(function(prev, curr){
-        if(!z.length) {
-            z.push([curr[0], denom[curr[0]]]);
-        }
-        // console.log(curr[0])
-        // console.log(z[z.length-1][0]);
-        if (curr[0] == z[z.length-1][0]) {
-            z[z.length-1][1] += denom[curr[0]];
-        }else {
-            z.push([curr[0], denom[curr[0]]]);
-        }
-        
-        
-        
-    });
-    return z;
-    
-}
+// let tes = [10, 10, 10, 1 ,1];
+let tes2 = [10, 1];
 
-console.log(wrapper(tes));
+
+// console.log(wrapper(tes2));
 // let kosongan = [];
 // console.log( kosongan[0] === undefined )
-// console.log(cashRegister(price, customerCash, cashInDrawer));
+console.log(cashRegister(price, customerCash, cashInDrawer));
